@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { detectUrl } from '../../utils/urlDetector'
 import { fetchDeckFromUrl } from '../../api/client'
 import PlatformGuide from './PlatformGuide'
@@ -13,12 +13,12 @@ export default function DeckInput({ onAnalyze, isLoading }: DeckInputProps) {
   const [fetchingUrl, setFetchingUrl] = useState(false)
   const [urlStatus, setUrlStatus] = useState<string | null>(null)
   const [showGuide, setShowGuide] = useState<ReturnType<typeof detectUrl> | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handlePaste = useCallback(async (pasted: string) => {
     const detected = detectUrl(pasted)
 
     if (detected.platform === 'none') {
-      // Plain text decklist — just use it
       return
     }
 
@@ -38,19 +38,37 @@ export default function DeckInput({ onAnalyze, isLoading }: DeckInputProps) {
       return
     }
 
-    // Unsupported platform — show guide
     setShowGuide(detected)
   }, [])
 
   const handleChange = (value: string) => {
     setText(value)
-    // Check for URL on every change (handles paste)
     if (value.trim().startsWith('http')) {
       handlePaste(value)
     } else {
       setShowGuide(null)
       setUrlStatus(null)
     }
+  }
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const content = event.target?.result
+      if (typeof content === 'string') {
+        setText(content)
+        setShowGuide(null)
+        setUrlStatus(`Loaded ${file.name}`)
+        setTimeout(() => setUrlStatus(null), 3000)
+      }
+    }
+    reader.readAsText(file)
+
+    // Reset so the same file can be re-uploaded
+    e.target.value = ''
   }
 
   const handleSubmit = () => {
@@ -67,9 +85,9 @@ export default function DeckInput({ onAnalyze, isLoading }: DeckInputProps) {
         <textarea
           value={text}
           onChange={e => handleChange(e.target.value)}
-          placeholder={`Paste your decklist here...\n\nSupported formats:\n  MTG Arena, Moxfield, Archidekt, Manabox, MTGO\n\nOr paste an Archidekt deck URL`}
-          className="w-full min-h-[220px] bg-gray-900 border border-gray-700 rounded-lg p-4 text-sm text-gray-200 font-mono placeholder-gray-600 focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500 resize-y"
-          style={{ fontSize: '16px' }} // Prevents iOS zoom
+          placeholder={`Paste your decklist or upload a file\n\nSupported formats:\n  MTG Arena, Moxfield, Archidekt, Manabox, MTGO\n\nOr paste an Archidekt deck URL`}
+          className="w-full min-h-[180px] bg-gray-900 border border-gray-700 rounded-lg p-4 text-sm text-gray-200 font-mono placeholder-gray-600 focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500 resize-y"
+          style={{ fontSize: '16px' }}
           disabled={fetchingUrl}
           spellCheck={false}
         />
@@ -80,9 +98,25 @@ export default function DeckInput({ onAnalyze, isLoading }: DeckInputProps) {
         )}
       </div>
 
+      {/* File upload */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".txt,.csv,.dec,.dek,.mwDeck,.cod"
+        onChange={handleFileUpload}
+        className="hidden"
+      />
+      <button
+        onClick={() => fileInputRef.current?.click()}
+        disabled={fetchingUrl}
+        className="w-full py-2.5 bg-gray-900 border border-gray-700 border-dashed rounded-lg text-sm text-gray-400 hover:text-gray-200 hover:border-gray-500 transition-colors"
+      >
+        Upload Deck File (.txt, .csv, .dec)
+      </button>
+
       {urlStatus && (
         <div className={`text-sm px-3 py-2 rounded-md ${
-          urlStatus.includes('loaded') ? 'bg-green-900/30 text-green-400' :
+          urlStatus.includes('loaded') || urlStatus.includes('Loaded') ? 'bg-green-900/30 text-green-400' :
           urlStatus.includes('Failed') ? 'bg-red-900/30 text-red-400' :
           'bg-blue-900/30 text-blue-400'
         }`}>
