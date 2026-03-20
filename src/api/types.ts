@@ -31,8 +31,17 @@ export interface EngineAnalysis {
   engine_indicators: string[]
 }
 
+export interface ComboInfo {
+  combo_name: string
+  cards: string[]
+  description: string
+  combo_type: string
+  power_level: string
+  colors: string[]
+}
+
 export interface ComboAnalysis {
-  detected_combos: string[]
+  detected_combos: (string | ComboInfo)[]
   has_deterministic_win: boolean
   has_cedh_combo: boolean
   highest_power_level: string

@@ -22,7 +22,7 @@ export default function ComboList({ combos }: ComboListProps) {
         {combos.detected_combos.map((combo, i) => (
           <li key={i} className="text-sm text-gray-400 flex items-start gap-2">
             <span className="text-gray-600 mt-0.5">&bull;</span>
-            {combo}
+            {typeof combo === 'string' ? combo : combo.combo_name}
           </li>
         ))}
       </ul>
