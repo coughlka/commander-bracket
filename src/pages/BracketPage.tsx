@@ -3,6 +3,7 @@ import { useAnalyzeDeck } from '../api/hooks'
 import { useSavedDecks } from '../hooks/useSavedDecks'
 import DeckInput from '../components/input/DeckInput'
 import LoadingState from '../components/shared/LoadingState'
+import ErrorBoundary from '../components/shared/ErrorBoundary'
 import BracketBadge from '../components/results/BracketBadge'
 import BracketMeter from '../components/results/BracketMeter'
 import BracketReason from '../components/results/BracketReason'
@@ -58,6 +59,7 @@ export default function BracketPage() {
 
       {/* Results */}
       {analysis && (
+        <ErrorBoundary>
         <div className="space-y-6">
           {/* Validation errors — always show first */}
           <ValidationErrors validation={analysis.validation} />
@@ -179,6 +181,7 @@ export default function BracketPage() {
 
           <FeedbackWidget />
         </div>
+        </ErrorBoundary>
       )}
     </div>
   )

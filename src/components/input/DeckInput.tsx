@@ -77,7 +77,32 @@ export default function DeckInput({ onAnalyze, isLoading }: DeckInputProps) {
     onAnalyze(trimmed)
   }
 
-  const lineCount = text.split('\n').filter(l => l.trim() && !l.startsWith('//')).length
+  const cardCount = (() => {
+    let count = 0
+    let inExcluded = false
+    for (const line of text.split('\n')) {
+      const trimmed = line.trim().toLowerCase()
+      if (!trimmed) continue
+      // Track sections to skip
+      if (trimmed.startsWith('//')) {
+        inExcluded = trimmed.includes('sideboard') || trimmed.includes('maybeboard') || trimmed.includes('maybe')
+        continue
+      }
+      if (['sideboard', 'sideboard:', 'maybeboard', 'maybeboard:'].includes(trimmed)) {
+        inExcluded = true
+        continue
+      }
+      if (['commander', 'commander:', 'mainboard', 'mainboard:', 'deck', 'deck:'].includes(trimmed)) {
+        inExcluded = false
+        continue
+      }
+      if (inExcluded) continue
+      // Parse quantity
+      const qtyMatch = line.trim().match(/^(\d+)x?\s/)
+      count += qtyMatch ? parseInt(qtyMatch[1], 10) : 1
+    }
+    return count
+  })()
 
   return (
     <div className="w-full space-y-3">
@@ -91,9 +116,9 @@ export default function DeckInput({ onAnalyze, isLoading }: DeckInputProps) {
           disabled={fetchingUrl}
           spellCheck={false}
         />
-        {lineCount > 0 && (
+        {cardCount > 0 && (
           <div className="absolute bottom-3 right-3 text-xs text-gray-500">
-            {lineCount} cards
+            {cardCount} cards
           </div>
         )}
       </div>
