@@ -38,8 +38,8 @@ export default function HomePage() {
             description="IPOM engine detection with role breakdown"
           />
           <FeatureCard
-            title="Shareable"
-            description="Download your bracket card for Discord & Reddit"
+            title="Card Previews"
+            description="Click any card to see it full-size with role analysis"
           />
         </div>
 
