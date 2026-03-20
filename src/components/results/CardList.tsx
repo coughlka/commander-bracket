@@ -9,7 +9,7 @@ interface CardListProps {
 }
 
 export default function CardList({ title, cards, count, colorClass = 'text-gray-300' }: CardListProps) {
-  const [expanded, setExpanded] = useState(false)
+  const [expanded, setExpanded] = useState(true)
 
   if (count === 0) return null
 

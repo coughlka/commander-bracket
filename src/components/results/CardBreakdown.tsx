@@ -28,7 +28,7 @@ const ROLE_LABELS: Record<string, string> = {
 }
 
 export default function CardBreakdown({ cards }: CardBreakdownProps) {
-  const [expanded, setExpanded] = useState(false)
+  const [expanded, setExpanded] = useState(true)
   const [sort, setSort] = useState<SortKey>('contribution')
   const [filter, setFilter] = useState<FilterRole>('all')
 
@@ -115,37 +115,36 @@ function CardRow({ card }: { card: CardClassification }) {
   const contribPct = Math.round(card.engine_contribution * 100)
 
   return (
-    <div className="bg-gray-900/50 border border-gray-800 rounded-lg px-3 py-2 space-y-1">
-      <div className="flex items-center gap-3">
-        {/* Card name with preview */}
+    <div className="bg-gray-900/50 border border-gray-800 rounded-lg px-3 py-2 space-y-1.5">
+      {/* Top line: name + role */}
+      <div className="flex items-start justify-between gap-2">
         <CardTooltip cardName={card.card_name}>
-          <span className="text-sm text-gray-200 hover:text-white cursor-pointer font-medium flex-1 min-w-0 truncate">
+          <span className="text-sm text-gray-200 hover:text-white cursor-pointer font-medium">
             {card.card_name}
           </span>
         </CardTooltip>
 
-        {/* Role badge */}
-        <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border whitespace-nowrap ${roleStyle}`}>
+        <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border whitespace-nowrap shrink-0 ${roleStyle}`}>
           {ROLE_LABELS[card.primary_role] ?? card.primary_role}
         </span>
-
-        {/* Engine contribution bar */}
-        {contribPct > 0 && (
-          <div className="hidden sm:flex items-center gap-1.5 min-w-[80px]">
-            <div className="flex-1 h-1.5 bg-gray-800 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-purple-500 rounded-full transition-all"
-                style={{ width: `${Math.min(contribPct, 100)}%` }}
-              />
-            </div>
-            <span className="text-[10px] text-gray-500 w-7 text-right">{contribPct}%</span>
-          </div>
-        )}
       </div>
 
-      {/* Reasons shown inline */}
+      {/* Contribution bar — always visible */}
+      {contribPct > 0 && (
+        <div className="flex items-center gap-1.5">
+          <div className="flex-1 h-1.5 bg-gray-800 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-purple-500 rounded-full transition-all"
+              style={{ width: `${Math.min(contribPct, 100)}%` }}
+            />
+          </div>
+          <span className="text-[10px] text-gray-500 w-7 text-right shrink-0">{contribPct}%</span>
+        </div>
+      )}
+
+      {/* Reasons shown inline — wrapping, not truncated */}
       {card.role_reasons.length > 0 && (
-        <p className="text-xs text-gray-500 truncate">
+        <p className="text-xs text-gray-500 leading-relaxed">
           {card.role_reasons.join(' · ')}
         </p>
       )}

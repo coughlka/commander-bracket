@@ -7,7 +7,7 @@ interface GameChangersProps {
 }
 
 export default function GameChangers({ byCategory, total }: GameChangersProps) {
-  const [expanded, setExpanded] = useState(total > 0)
+  const [expanded, setExpanded] = useState(true)
   const categories = Object.entries(byCategory)
     .filter(([, cards]) => Array.isArray(cards) && cards.length > 0) as [string, string[]][]
 
