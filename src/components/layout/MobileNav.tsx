@@ -11,7 +11,13 @@ export default function MobileNav() {
   const location = useLocation()
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-sm border-t border-gray-800 safe-area-pb">
+    <nav
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-gray-800"
+      style={{
+        backgroundColor: '#111827',
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+      }}
+    >
       <div className="flex items-center justify-around h-14">
         {TABS.map(({ path, label, icon }) => (
           <Link
