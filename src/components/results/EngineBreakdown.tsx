@@ -18,24 +18,44 @@ export default function EngineBreakdown({ ipom }: EngineBreakdownProps) {
 
   const total = roles.reduce((sum, r) => sum + r.value, 0)
 
+  // Show co-engines when confidence is low (close race)
+  const isLowConfidence = engine.engine_confidence < 0.25
+  const coEngines = isLowConfidence && engine.secondary_engines.length > 0
+    ? engine.secondary_engines.slice(0, 1)  // Show top secondary as co-engine
+    : []
+
   return (
     <div className="space-y-3">
       <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wide">
         Engine Analysis
       </h3>
 
-      <div className="flex items-center gap-3">
+      {/* Primary engine(s) */}
+      <div className="flex flex-wrap items-center gap-2">
         <span className="text-base font-medium text-gray-200">
           {formatEngine(engine.primary_engine)}
         </span>
+        {coEngines.map(e => (
+          <span key={e} className="text-base font-medium text-gray-400">
+            + {formatEngine(e)}
+          </span>
+        ))}
         <span className="text-xs text-gray-500">
           {formatConfidence(engine.engine_confidence)} confidence
         </span>
       </div>
 
-      {engine.secondary_engines.length > 0 && (
+      {isLowConfidence && (
+        <p className="text-xs text-gray-500">
+          This deck blends multiple strategies — engine scores are close
+        </p>
+      )}
+
+      {/* Secondary engines (excluding any shown as co-engines) */}
+      {engine.secondary_engines.length > coEngines.length && (
         <div className="flex flex-wrap gap-1.5">
-          {engine.secondary_engines.map(e => (
+          <span className="text-xs text-gray-500 self-center">Also:</span>
+          {engine.secondary_engines.slice(coEngines.length).map(e => (
             <span key={e} className="text-xs bg-gray-800 rounded-md px-2 py-0.5 text-gray-400">
               {formatEngine(e)}
             </span>

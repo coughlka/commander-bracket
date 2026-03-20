@@ -38,7 +38,7 @@ export default function CardBreakdown({ cards }: CardBreakdownProps) {
   }, [cards])
 
   const sorted = useMemo(() => {
-    let filtered = filter === 'all' ? cards : cards.filter(c => c.primary_role === filter)
+    const filtered = filter === 'all' ? cards : cards.filter(c => c.primary_role === filter)
     return [...filtered].sort((a, b) => {
       if (sort === 'name') return a.card_name.localeCompare(b.card_name)
       if (sort === 'role') return a.primary_role.localeCompare(b.primary_role)
@@ -111,12 +111,11 @@ export default function CardBreakdown({ cards }: CardBreakdownProps) {
 }
 
 function CardRow({ card }: { card: CardClassification }) {
-  const [showReasons, setShowReasons] = useState(false)
   const roleStyle = ROLE_COLORS[card.primary_role] ?? ROLE_COLORS.utility
   const contribPct = Math.round(card.engine_contribution * 100)
 
   return (
-    <div className="bg-gray-900/50 border border-gray-800 rounded-lg px-3 py-2">
+    <div className="bg-gray-900/50 border border-gray-800 rounded-lg px-3 py-2 space-y-1">
       <div className="flex items-center gap-3">
         {/* Card name with preview */}
         <CardTooltip cardName={card.card_name}>
@@ -142,27 +141,13 @@ function CardRow({ card }: { card: CardClassification }) {
             <span className="text-[10px] text-gray-500 w-7 text-right">{contribPct}%</span>
           </div>
         )}
-
-        {/* Expand reasons */}
-        {card.role_reasons.length > 0 && (
-          <button
-            onClick={() => setShowReasons(!showReasons)}
-            className="text-gray-600 hover:text-gray-400 text-xs transition-colors"
-          >
-            {showReasons ? '\u25B2' : '?'}
-          </button>
-        )}
       </div>
 
-      {/* Reasons dropdown */}
-      {showReasons && card.role_reasons.length > 0 && (
-        <div className="mt-1.5 ml-0 space-y-0.5">
-          {card.role_reasons.map((reason, i) => (
-            <p key={i} className="text-xs text-gray-500 pl-2 border-l border-gray-800">
-              {reason}
-            </p>
-          ))}
-        </div>
+      {/* Reasons shown inline */}
+      {card.role_reasons.length > 0 && (
+        <p className="text-xs text-gray-500 truncate">
+          {card.role_reasons.join(' · ')}
+        </p>
       )}
     </div>
   )
