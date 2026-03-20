@@ -136,7 +136,7 @@ function DeckDetail({ deck, onBack, onRemove }: { deck: SavedDeck; onBack: () =>
           <BracketReason bracket={ba} />
           <div className="pt-6"><EngineBreakdown ipom={analysis.ipom_analysis} /></div>
           <div className="pt-6">
-            <GameChangers byCategory={ba.game_changers_by_category} total={ba.total_game_changers} />
+            <GameChangers byCategory={ba.game_changers_by_category} found={ba.game_changers_found} total={ba.total_game_changers} />
           </div>
           <div className="pt-6"><ComboList combos={analysis.ipom_analysis.combos} /></div>
           <div className="pt-6">

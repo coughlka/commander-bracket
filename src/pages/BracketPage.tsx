@@ -110,6 +110,7 @@ export default function BracketPage() {
             <div className="pt-6">
               <GameChangers
                 byCategory={analysis.bracket_analysis.game_changers_by_category}
+                found={analysis.bracket_analysis.game_changers_found}
                 total={analysis.bracket_analysis.total_game_changers}
               />
             </div>
