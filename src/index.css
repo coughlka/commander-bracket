@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+:root {
+  --bracket-1: #22c55e;
+  --bracket-2: #3b82f6;
+  --bracket-3: #a855f7;
+  --bracket-4: #f97316;
+  --bracket-5: #ef4444;
+}
+
+body {
+  @apply bg-gray-950 text-gray-100 antialiased;
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+#root {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
