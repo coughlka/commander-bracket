@@ -42,32 +42,14 @@ export async function apiGet<T>(path: string): Promise<T> {
   return res.json() as Promise<T>
 }
 
-export async function fetchArchidektDeck(deckId: string): Promise<string> {
-  const res = await fetch(`https://archidekt.com/api/decks/${deckId}/`, {
-    signal: AbortSignal.timeout(15_000),
-  })
+interface FetchUrlResponse {
+  decklist: string
+  source_url: string
+  source_type: string
+  card_count: number
+}
 
-  if (!res.ok) {
-    throw new Error('Failed to fetch deck from Archidekt')
-  }
-
-  const data = await res.json()
-  const lines: string[] = []
-
-  for (const card of data.cards ?? []) {
-    const name = card.card?.oracleCard?.name ?? card.card?.name
-    const qty = card.quantity ?? 1
-    const categories = card.categories ?? []
-
-    if (!name) continue
-
-    if (categories.includes('Commander')) {
-      lines.unshift(`// Commander`)
-      lines.splice(1, 0, `${qty} ${name}`)
-    } else {
-      lines.push(`${qty} ${name}`)
-    }
-  }
-
-  return lines.join('\n')
+export async function fetchDeckFromUrl(url: string): Promise<string> {
+  const data = await apiPost<FetchUrlResponse>('/decks/fetch-url', { url })
+  return data.decklist
 }

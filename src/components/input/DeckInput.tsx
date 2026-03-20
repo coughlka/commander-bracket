@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { detectUrl } from '../../utils/urlDetector'
-import { fetchArchidektDeck } from '../../api/client'
+import { fetchDeckFromUrl } from '../../api/client'
 import PlatformGuide from './PlatformGuide'
 
 interface DeckInputProps {
@@ -22,11 +22,11 @@ export default function DeckInput({ onAnalyze, isLoading }: DeckInputProps) {
       return
     }
 
-    if (detected.platform === 'archidekt' && detected.deckId) {
+    if (detected.platform === 'archidekt') {
       setFetchingUrl(true)
       setUrlStatus('Fetching deck from Archidekt...')
       try {
-        const decklist = await fetchArchidektDeck(detected.deckId)
+        const decklist = await fetchDeckFromUrl(detected.url)
         setText(decklist)
         setUrlStatus('Deck loaded from Archidekt!')
         setTimeout(() => setUrlStatus(null), 3000)
