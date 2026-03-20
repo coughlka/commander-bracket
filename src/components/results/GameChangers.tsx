@@ -2,13 +2,14 @@ import { useState } from 'react'
 import CardTooltip from '../shared/CardTooltip'
 
 interface GameChangersProps {
-  byCategory: Record<string, string[]>
+  byCategory: Record<string, string[] | number>
   total: number
 }
 
 export default function GameChangers({ byCategory, total }: GameChangersProps) {
-  const [expanded, setExpanded] = useState(false)
-  const categories = Object.entries(byCategory).filter(([, cards]) => cards.length > 0)
+  const [expanded, setExpanded] = useState(total > 0)
+  const categories = Object.entries(byCategory)
+    .filter(([, cards]) => Array.isArray(cards) && cards.length > 0) as [string, string[]][]
 
   if (total === 0) return null
 
@@ -32,7 +33,7 @@ export default function GameChangers({ byCategory, total }: GameChangersProps) {
               <div className="flex flex-wrap gap-1.5">
                 {cards.map(card => (
                   <CardTooltip key={card} cardName={card}>
-                    <span className="text-xs bg-gray-800 border border-gray-700 rounded-md px-2 py-1 text-gray-300 hover:border-gray-500 cursor-pointer transition-colors">
+                    <span className="text-xs bg-yellow-900/30 border border-yellow-800/40 rounded-md px-2 py-1 text-yellow-300 hover:bg-yellow-900/50 hover:border-yellow-700/60 cursor-pointer transition-colors">
                       {card}
                     </span>
                   </CardTooltip>

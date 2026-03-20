@@ -1,9 +1,19 @@
+export interface ValidationError {
+  code: string
+  message: string
+  severity: string
+  cards?: string[]
+  details?: Record<string, unknown>
+}
+
 export interface ValidationResult {
   valid: boolean
-  errors: string[]
+  errors: ValidationError[]
   warnings: string[]
   card_count: number
-  has_commanders: boolean
+  has_commanders?: boolean
+  commander_count?: number
+  schema_version?: string
 }
 
 export interface DeckStats {
@@ -48,10 +58,20 @@ export interface RoleSummary {
   utility: number
 }
 
+export interface CardClassification {
+  card_name: string
+  primary_role: string
+  secondary_roles: string[]
+  engine_contribution: number
+  is_cheap_enabler: boolean
+  role_reasons: string[]
+}
+
 export interface IpomAnalysis {
   engine: EngineAnalysis
   combos: ComboAnalysis
   tribal: TribalAnalysis
+  card_classifications?: CardClassification[]
   role_summary: RoleSummary
   cheap_enabler_count: number
   combo_piece_count: number
@@ -92,6 +112,8 @@ export interface BracketAnalysis {
   turn_breakdown?: Record<string, unknown>
   analysis_confidence?: Record<string, unknown>
   warp_analysis?: Record<string, unknown>
+  bracket_explanation?: string[]
+  next_bracket_guidance?: Record<string, unknown>
 }
 
 export interface WinConditions {
