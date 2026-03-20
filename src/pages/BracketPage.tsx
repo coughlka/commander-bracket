@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { useAnalyzeDeck } from '../api/hooks'
+import { useSavedDecks } from '../hooks/useSavedDecks'
 import DeckInput from '../components/input/DeckInput'
 import LoadingState from '../components/shared/LoadingState'
 import BracketBadge from '../components/results/BracketBadge'
@@ -14,10 +16,19 @@ import FeedbackWidget from '../components/shared/FeedbackWidget'
 
 export default function BracketPage() {
   const mutation = useAnalyzeDeck()
+  const { saveDeck } = useSavedDecks()
+  const [saved, setSaved] = useState(false)
   const analysis = mutation.data
 
   const handleAnalyze = (decklist: string) => {
+    setSaved(false)
     mutation.mutate({ decklist })
+  }
+
+  const handleSave = () => {
+    if (!analysis) return
+    saveDeck(analysis)
+    setSaved(true)
   }
 
   return (
@@ -71,6 +82,19 @@ export default function BracketPage() {
               </div>
             </div>
           </div>
+
+          {/* Save deck button */}
+          <button
+            onClick={handleSave}
+            disabled={saved}
+            className={`w-full py-3 rounded-lg font-medium text-sm transition-colors ${
+              saved
+                ? 'bg-green-900/30 border border-green-800/50 text-green-400 cursor-default'
+                : 'bg-gray-800 border border-gray-700 text-gray-300 hover:bg-gray-700 hover:border-gray-500'
+            }`}
+          >
+            {saved ? 'Saved to My Decks' : 'Save to My Decks'}
+          </button>
 
           {/* Detailed sections */}
           <div className="space-y-6 divide-y divide-gray-800">

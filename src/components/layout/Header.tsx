@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 const NAV_ITEMS = [
   { path: '/', label: 'Home' },
   { path: '/bracket', label: 'Bracket' },
+  { path: '/decks', label: 'My Decks' },
   { path: '/about', label: 'About' },
 ]
 

@@ -5,6 +5,7 @@ import Footer from './components/layout/Footer'
 import MobileNav from './components/layout/MobileNav'
 import HomePage from './pages/HomePage'
 import BracketPage from './pages/BracketPage'
+import MyDecksPage from './pages/MyDecksPage'
 import AboutPage from './pages/AboutPage'
 
 const queryClient = new QueryClient({
@@ -25,6 +26,7 @@ function App() {
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/bracket" element={<BracketPage />} />
+              <Route path="/decks" element={<MyDecksPage />} />
               <Route path="/about" element={<AboutPage />} />
             </Routes>
           </main>
