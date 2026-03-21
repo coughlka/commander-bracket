@@ -6,7 +6,7 @@ export default function HomePage() {
       <div className="max-w-2xl text-center space-y-8">
         {/* Hero */}
         <div className="space-y-4">
-          <img src="/logo.png" alt="CommanderBracket" className="h-24 sm:h-32 w-auto mx-auto" />
+          <img src="/logo-main.png" alt="CommanderBracket" className="h-32 sm:h-40 w-auto mx-auto" />
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight">
             What Bracket Is
             <br />
