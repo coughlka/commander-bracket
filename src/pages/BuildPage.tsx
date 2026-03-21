@@ -13,6 +13,7 @@ import ErrorBoundary from '../components/shared/ErrorBoundary'
 
 export default function BuildPage() {
   const [commander, setCommander] = useState<string | null>(null)
+  const [partner, setPartner] = useState<string | null>(null)
   const [collectionId, setCollectionId] = useState<string | null>(null)
   const [ownedCards, setOwnedCards] = useState<string[] | null>(null)
   const [cards, setCards] = useState<DeckCard[]>([])
@@ -45,12 +46,22 @@ export default function BuildPage() {
     return lines.join('\n')
   }, [cards])
 
-  const handleCommanderSelect = (name: string) => {
+  const handleCommanderSelect = (name: string, partnerName: string | null) => {
+    setPartner(partnerName)
     if (name) {
       setCommander(name)
-      setCards([{ name, price: null, section: 'commander' }])
+      const commanders: DeckCard[] = [{ name, price: null, section: 'commander' }]
+      if (partnerName) {
+        commanders.push({ name: partnerName, price: null, section: 'commander' })
+      }
+      // Keep existing mainboard cards when changing partner
+      setCards(prev => {
+        const mainboard = prev.filter(c => c.section === 'mainboard')
+        return [...commanders, ...mainboard]
+      })
     } else {
       setCommander(null)
+      setPartner(null)
       setCards([])
     }
     staplesMutation.reset()
@@ -141,7 +152,7 @@ export default function BuildPage() {
 
       <ErrorBoundary>
         {/* Step 1: Commander */}
-        <CommanderSearch onSelect={handleCommanderSelect} selected={commander} />
+        <CommanderSearch onSelect={handleCommanderSelect} selected={commander} partner={partner} />
 
         {/* Commander profile */}
         {commander && <CommanderProfile commander={commander} />}

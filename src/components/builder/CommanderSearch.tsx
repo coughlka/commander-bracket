@@ -2,11 +2,82 @@ import { useState, useEffect, useRef } from 'react'
 import { useCardAutocomplete } from '../../api/hooks'
 
 interface CommanderSearchProps {
-  onSelect: (name: string) => void
+  onSelect: (commander: string, partner: string | null) => void
   selected: string | null
+  partner: string | null
 }
 
-export default function CommanderSearch({ onSelect, selected }: CommanderSearchProps) {
+export default function CommanderSearch({ onSelect, selected, partner }: CommanderSearchProps) {
+  const [showPartner, setShowPartner] = useState(!!partner)
+
+  const handleCommanderSelect = (name: string) => {
+    if (!name) {
+      setShowPartner(false)
+      onSelect('', null)
+    } else {
+      onSelect(name, partner)
+    }
+  }
+
+  const handlePartnerSelect = (name: string) => {
+    onSelect(selected ?? '', name || null)
+  }
+
+  const handleAddPartner = () => {
+    setShowPartner(true)
+  }
+
+  const handleRemovePartner = () => {
+    setShowPartner(false)
+    onSelect(selected ?? '', null)
+  }
+
+  return (
+    <div className="space-y-3">
+      <SingleSearch
+        label="Commander"
+        selected={selected}
+        onSelect={handleCommanderSelect}
+        placeholder="Search for a commander..."
+      />
+
+      {selected && !showPartner && (
+        <button
+          onClick={handleAddPartner}
+          className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+        >
+          + Add partner / background
+        </button>
+      )}
+
+      {showPartner && (
+        <div className="space-y-1">
+          <SingleSearch
+            label="Partner / Background"
+            selected={partner}
+            onSelect={handlePartnerSelect}
+            placeholder="Search for partner or background..."
+          />
+          {!partner && (
+            <button
+              onClick={handleRemovePartner}
+              className="text-xs text-gray-600 hover:text-gray-400 transition-colors"
+            >
+              Remove partner
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function SingleSearch({ label, selected, onSelect, placeholder }: {
+  label: string
+  selected: string | null
+  onSelect: (name: string) => void
+  placeholder: string
+}) {
   const [query, setQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
@@ -40,8 +111,8 @@ export default function CommanderSearch({ onSelect, selected }: CommanderSearchP
 
   if (selected) {
     return (
-      <div className="space-y-2">
-        <label className="text-xs text-gray-500 uppercase tracking-wide font-medium">Commander</label>
+      <div className="space-y-1">
+        <label className="text-xs text-gray-500 uppercase tracking-wide font-medium">{label}</label>
         <div className="flex items-center gap-3 bg-gray-900 border border-gray-700 rounded-lg p-3">
           <img
             src={`https://api.scryfall.com/cards/named?format=image&version=art_crop&fuzzy=${encodeURIComponent(selected)}`}
@@ -57,8 +128,8 @@ export default function CommanderSearch({ onSelect, selected }: CommanderSearchP
   }
 
   return (
-    <div className="space-y-2 relative">
-      <label className="text-xs text-gray-500 uppercase tracking-wide font-medium">Commander</label>
+    <div className="space-y-1 relative">
+      <label className="text-xs text-gray-500 uppercase tracking-wide font-medium">{label}</label>
       <input
         ref={inputRef}
         type="text"
@@ -66,7 +137,7 @@ export default function CommanderSearch({ onSelect, selected }: CommanderSearchP
         onChange={e => setQuery(e.target.value)}
         onFocus={() => suggestions && suggestions.length > 0 && setShowDropdown(true)}
         onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
-        placeholder="Search for a commander..."
+        placeholder={placeholder}
         className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500"
         style={{ fontSize: '16px' }}
       />
