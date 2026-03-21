@@ -62,11 +62,15 @@ export default function BuildPage() {
 
   const handleBuild = () => {
     if (!commander && !prompt.trim()) return
+    const collectionPrompt = useMyCollection && collection.ownedCards
+      ? `\n\nPrioritize these cards from my collection: ${collection.ownedCards.slice(0, 50).join(', ')}`
+      : ''
     buildMutation.mutate({
-      prompt: prompt.trim() || 'Build a well-rounded deck',
+      prompt: (prompt.trim() || 'Build a well-rounded deck') + collectionPrompt,
       commander: commander ?? undefined,
       partner: partner ?? undefined,
       collection_id: useMyCollection ? collection.collectionId ?? undefined : undefined,
+      additional_owned: useMyCollection ? collection.ownedCards ?? undefined : undefined,
     })
   }
 

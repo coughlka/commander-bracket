@@ -220,6 +220,7 @@ interface NaturalBuildRequest {
   commander?: string
   partner?: string
   collection_id?: string
+  additional_owned?: string[]
 }
 
 // --- Bracket Adjustment ---
