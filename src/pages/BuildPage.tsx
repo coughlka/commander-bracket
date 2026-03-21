@@ -131,17 +131,18 @@ export default function BuildPage() {
   // Filter out cards already in deck from suggestions
   const deckCardNames = new Set(cards.map(c => c.name.toLowerCase()))
   const filteredStaples = (staplesMutation.data?.recommended_additions ?? [])
-    .filter(s => !deckCardNames.has(s.name.toLowerCase()))
+    .filter(s => s?.name && !deckCardNames.has(s.name.toLowerCase()))
   const filteredCombos = (combosMutation.data?.completion_suggestions ?? [])
-    .filter(s => !deckCardNames.has(s.card.toLowerCase()))
+    .filter(s => s?.card && !deckCardNames.has(s.card.toLowerCase()))
     .map(s => ({
       name: s.card,
-      price: s.price,
+      price: s.price ?? null,
       category: 'combo',
-      reason: `Combos with ${s.completes_with}: ${s.combo_info.effect}`,
+      reason: `Combos with ${s.completes_with ?? '?'}: ${s.combo_info?.effect ?? 'unknown'}`,
     }))
 
   return (
+    <ErrorBoundary>
     <div className="max-w-3xl mx-auto px-4 py-8 pb-24 md:pb-8 space-y-6">
       <div className="text-center space-y-2">
         <h1 className="text-2xl sm:text-3xl font-bold text-white">Deck Builder</h1>
@@ -149,8 +150,6 @@ export default function BuildPage() {
           Pick a commander, link your collection, build a deck
         </p>
       </div>
-
-      <ErrorBoundary>
         {/* Step 1: Commander */}
         <CommanderSearch onSelect={handleCommanderSelect} selected={commander} partner={partner} />
 
@@ -266,7 +265,7 @@ export default function BuildPage() {
             </div>
           </div>
         )}
-      </ErrorBoundary>
     </div>
+    </ErrorBoundary>
   )
 }

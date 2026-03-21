@@ -29,7 +29,7 @@ export default function HomePage() {
           </Link>
           <Link
             to="/build"
-            className="w-full sm:w-auto px-8 py-4 bg-gray-800 text-white font-bold text-lg rounded-xl border border-gray-700 hover:bg-gray-700 transition-colors text-center"
+            className="w-full sm:w-auto px-8 py-4 bg-white text-gray-950 font-bold text-lg rounded-xl hover:bg-gray-200 transition-colors text-center"
           >
             Build a Deck
           </Link>
