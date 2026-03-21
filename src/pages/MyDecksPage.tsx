@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { useSavedDecks, type SavedDeck } from '../hooks/useSavedDecks'
 import { useAuth } from '../hooks/useAuth'
 import { useAnalyzeDeck } from '../api/hooks'
@@ -19,6 +19,12 @@ export default function MyDecksPage() {
   const { user, signInWithGoogle } = useAuth()
   const { decks, saveDeck, removeDeck, loading, isCloud, migrationNeeded, migrateLocalDecks, dismissMigration } = useSavedDecks()
   const [viewingDeck, setViewingDeck] = useState<SavedDeck | null>(null)
+  const location = useLocation()
+
+  // Reset to list view when navigating to /decks via nav
+  useEffect(() => {
+    setViewingDeck(null)
+  }, [location.key])
 
   if (viewingDeck) {
     return <DeckDetail deck={viewingDeck} onBack={() => setViewingDeck(null)} onRemove={removeDeck} onUpdate={(updated) => setViewingDeck(updated)} saveDeck={saveDeck} />
