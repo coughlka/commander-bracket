@@ -136,12 +136,37 @@ function DeckDetail({ deck, onBack, onRemove, onUpdate, saveDeck }: {
   const analysis = deck.analysis
   const ba = analysis.bracket_analysis
 
+  // Reconstruct decklist from card classifications if not stored
+  const getDecklist = (): string | null => {
+    if (deck.decklist) return deck.decklist
+    // Try to rebuild from card_classifications
+    const ipom = analysis.ipom_analysis
+    const classifications = ipom?.card_classifications as { card_name: string }[] | undefined
+    if (classifications && classifications.length > 0) {
+      const lines: string[] = []
+      if (deck.commander) {
+        lines.push('// Commander')
+        lines.push(`1 ${deck.commander}`)
+        lines.push('')
+      }
+      for (const c of classifications) {
+        if (c.card_name !== deck.commander) {
+          lines.push(`1 ${c.card_name}`)
+        }
+      }
+      return lines.join('\n')
+    }
+    return null
+  }
+
   const handleReanalyze = async () => {
-    if (!deck.decklist) return
-    reanalyzeMutation.mutate({ decklist: deck.decklist, commander: deck.commander ?? undefined }, {
+    const decklist = getDecklist()
+    if (!decklist) return
+    reanalyzeMutation.mutate({ decklist, commander: deck.commander ?? undefined }, {
       onSuccess: async (newAnalysis) => {
-        // Save the updated analysis
-        await saveDeck(newAnalysis as never, deck.decklist)
+        // Save the updated analysis with reconstructed decklist
+        const decklistToSave = getDecklist()
+        await saveDeck(newAnalysis as never, decklistToSave ?? undefined)
         // Update the view
         onUpdate({
           ...deck,
@@ -190,22 +215,20 @@ function DeckDetail({ deck, onBack, onRemove, onUpdate, saveDeck }: {
       </div>
 
       {/* Re-analyze button */}
-      {deck.decklist && (
-        <button
-          onClick={handleReanalyze}
-          disabled={reanalyzeMutation.isPending}
-          className="w-full py-2 text-sm border border-gray-700 text-gray-400 rounded-lg hover:text-white hover:border-gray-500 transition-colors"
-        >
-          {reanalyzeMutation.isPending ? (
-            <span className="flex items-center justify-center gap-2">
-              <span className="animate-spin inline-block w-3 h-3 border-2 border-gray-600 border-t-purple-500 rounded-full" />
-              Re-analyzing...
-            </span>
-          ) : (
-            'Re-analyze with Latest Engine'
-          )}
-        </button>
-      )}
+      <button
+        onClick={handleReanalyze}
+        disabled={reanalyzeMutation.isPending || !getDecklist()}
+        className="w-full py-2 text-sm border border-gray-700 text-gray-400 rounded-lg hover:text-white hover:border-gray-500 disabled:opacity-30 transition-colors"
+      >
+        {reanalyzeMutation.isPending ? (
+          <span className="flex items-center justify-center gap-2">
+            <span className="animate-spin inline-block w-3 h-3 border-2 border-gray-600 border-t-purple-500 rounded-full" />
+            Re-analyzing...
+          </span>
+        ) : (
+          'Re-analyze with Latest Engine'
+        )}
+      </button>
 
       {/* Toggle full details */}
       <button
