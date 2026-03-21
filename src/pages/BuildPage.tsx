@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { useBuildAndAnalyze, type BuildAndAnalyzeResult } from '../api/hooks'
+import { useNaturalBuild, type BuildAndAnalyzeResult } from '../api/hooks'
 import { useSavedDecks } from '../hooks/useSavedDecks'
 import CommanderSearch from '../components/builder/CommanderSearch'
 import CommanderProfile from '../components/builder/CommanderProfile'
-import BuildPreferences, { type Preferences } from '../components/builder/BuildPreferences'
+import CollectionInput from '../components/builder/CollectionInput'
 import BracketBadge from '../components/results/BracketBadge'
 import BracketMeter from '../components/results/BracketMeter'
 import CardTooltip from '../components/shared/CardTooltip'
@@ -23,18 +23,22 @@ const ROLE_COLORS: Record<string, string> = {
   tribal: 'bg-amber-900/40 text-amber-300 border-amber-700/50',
 }
 
+const EXAMPLE_PROMPTS = [
+  "Spider tribal, go wide with tokens, budget $150",
+  "cEDH combo deck, include Thassa's Oracle",
+  "Casual landfall, no infinite combos, under $100",
+  "Voltron equipment deck, aggressive, bracket 4",
+  "Enchantress pillowfort with lifegain payoffs",
+]
+
 export default function BuildPage() {
   const [commander, setCommander] = useState<string | null>(null)
   const [partner, setPartner] = useState<string | null>(null)
-  const [preferences, setPreferences] = useState<Preferences>({
-    targetBracket: 3,
-    intentModes: ['value'],
-    maxPerCard: null,
-    totalBudget: null,
-  })
+  const [prompt, setPrompt] = useState('')
+  const [collectionId, setCollectionId] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
 
-  const buildMutation = useBuildAndAnalyze()
+  const buildMutation = useNaturalBuild()
   const { saveDeck } = useSavedDecks()
   const result = buildMutation.data
 
@@ -45,19 +49,22 @@ export default function BuildPage() {
     setSaved(false)
   }
 
+  const handleCollectionLoaded = (data: { collectionId?: string; ownedCards?: string[] }) => {
+    if (data.collectionId) setCollectionId(data.collectionId)
+  }
+
   const handleBuild = () => {
-    if (!commander) return
+    if (!commander && !prompt.trim()) return
     buildMutation.mutate({
-      commander,
-      power_level: preferences.targetBracket,
-      budget: preferences.maxPerCard ?? undefined,
+      prompt: prompt.trim() || 'Build a well-rounded deck',
+      commander: commander ?? undefined,
       partner: partner ?? undefined,
+      collection_id: collectionId ?? undefined,
     })
   }
 
   const handleSave = async () => {
     if (!result) return
-    // Build a CompleteAnalysis-compatible object for saving
     const analysis = {
       validation: result.analysis.validation,
       deck_stats: { total_cards: result.deck.card_count, cards_found: result.deck.card_count, cards_not_found: [] },
@@ -77,43 +84,65 @@ export default function BuildPage() {
       <div className="text-center space-y-2">
         <h1 className="text-2xl sm:text-3xl font-bold text-white">Deck Builder</h1>
         <p className="text-sm text-gray-500">
-          Pick a commander, set your power level, get a complete deck
+          Describe what you want and we'll build it
         </p>
       </div>
 
-      {/* Step 1: Commander */}
+      {/* Commander (optional — can also be in the prompt) */}
       <CommanderSearch onSelect={handleCommanderSelect} selected={commander} partner={partner} />
 
       {/* Commander profile */}
       {commander && <CommanderProfile commander={commander} />}
 
-      {/* Step 2: Preferences */}
-      {commander && (
-        <BuildPreferences preferences={preferences} onChange={setPreferences} />
-      )}
+      {/* Natural language prompt */}
+      <div className="space-y-2">
+        <label className="text-xs text-gray-500 uppercase tracking-wide font-medium">
+          What kind of deck do you want?
+        </label>
+        <textarea
+          value={prompt}
+          onChange={e => setPrompt(e.target.value)}
+          placeholder="Describe your deck strategy, win condition, budget, cards to include or avoid..."
+          className="w-full min-h-[100px] bg-gray-900 border border-gray-700 rounded-lg p-4 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500 resize-y"
+          style={{ fontSize: '16px' }}
+        />
+        {/* Example prompts */}
+        <div className="flex flex-wrap gap-1.5">
+          {EXAMPLE_PROMPTS.map(example => (
+            <button
+              key={example}
+              onClick={() => setPrompt(example)}
+              className="text-[10px] bg-gray-800/50 border border-gray-700/50 rounded-full px-2.5 py-1 text-gray-500 hover:text-gray-300 hover:border-gray-600 transition-colors"
+            >
+              {example}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Collection (optional) */}
+      <CollectionInput onCollectionLoaded={handleCollectionLoaded} />
 
       {/* Build button */}
-      {commander && (
-        <button
-          onClick={handleBuild}
-          disabled={buildMutation.isPending}
-          className="w-full py-3 bg-white text-gray-950 font-semibold rounded-lg hover:bg-gray-200 disabled:opacity-40 transition-colors text-base"
-        >
-          {buildMutation.isPending ? (
-            <span className="flex items-center justify-center gap-2">
-              <span className="animate-spin inline-block w-4 h-4 border-2 border-gray-400 border-t-gray-950 rounded-full" />
-              Building deck...
-            </span>
-          ) : (
-            'Build My Deck'
-          )}
-        </button>
-      )}
+      <button
+        onClick={handleBuild}
+        disabled={buildMutation.isPending || (!commander && !prompt.trim())}
+        className="w-full py-3 bg-white text-gray-950 font-semibold rounded-lg hover:bg-gray-200 disabled:opacity-40 transition-colors text-base"
+      >
+        {buildMutation.isPending ? (
+          <span className="flex items-center justify-center gap-2">
+            <span className="animate-spin inline-block w-4 h-4 border-2 border-gray-400 border-t-gray-950 rounded-full" />
+            Building deck...
+          </span>
+        ) : (
+          'Build My Deck'
+        )}
+      </button>
 
       {/* Error */}
       {buildMutation.isError && (
         <div className="bg-red-900/20 border border-red-800 rounded-lg p-4 text-sm text-red-400">
-          {buildMutation.error instanceof Error ? buildMutation.error.message : 'Build failed. Try a different commander.'}
+          {buildMutation.error instanceof Error ? buildMutation.error.message : 'Build failed. Try a different description.'}
         </div>
       )}
 
@@ -131,7 +160,6 @@ function BuildResult({ result, saved, onSave }: { result: BuildAndAnalyzeResult;
   const warpBracket = (analysis.bracket as Record<string, number>)?.warp_bracket ?? bracket
   const totalPrice = deck.cards.reduce((sum, c) => sum + (c.price_usd ?? 0), 0)
 
-  // Group cards by role
   const cardsByRole: Record<string, typeof deck.cards> = {}
   for (const card of deck.cards) {
     const role = card.role || 'other'
@@ -158,7 +186,6 @@ function BuildResult({ result, saved, onSave }: { result: BuildAndAnalyzeResult;
           </div>
         </div>
 
-        {/* Strengths & Weaknesses */}
         {summary.strengths.length > 0 && (
           <div>
             <h4 className="text-xs text-green-500 uppercase tracking-wide mb-1">Strengths</h4>
@@ -180,7 +207,6 @@ function BuildResult({ result, saved, onSave }: { result: BuildAndAnalyzeResult;
           </div>
         )}
 
-        {/* Bracket mismatch warning */}
         {summary.bracket_mismatch && (
           <div className="bg-yellow-900/20 border border-yellow-800/40 rounded-lg p-3 text-xs text-yellow-400">
             Requested {formatBracket(summary.bracket_mismatch.requested)} but built at {formatBracket(summary.bracket_mismatch.actual)}: {summary.bracket_mismatch.reason}

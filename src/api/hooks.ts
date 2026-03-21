@@ -212,3 +212,19 @@ export function useBuildAndAnalyze() {
       apiPost<BuildAndAnalyzeResult>('/commander/build-and-analyze', req),
   })
 }
+
+// --- Natural Language Build ---
+
+interface NaturalBuildRequest {
+  prompt: string
+  commander?: string
+  partner?: string
+  collection_id?: string
+}
+
+export function useNaturalBuild() {
+  return useMutation({
+    mutationFn: (req: NaturalBuildRequest) =>
+      apiPost<BuildAndAnalyzeResult>('/commander/build-natural', req),
+  })
+}
