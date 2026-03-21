@@ -4,6 +4,7 @@ import AuthButton from '../auth/AuthButton'
 const NAV_ITEMS = [
   { path: '/', label: 'Home' },
   { path: '/bracket', label: 'Bracket' },
+  { path: '/build', label: 'Build' },
   { path: '/decks', label: 'My Decks' },
   { path: '/about', label: 'About' },
 ]
