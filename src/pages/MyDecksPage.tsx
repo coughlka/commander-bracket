@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useSavedDecks, type SavedDeck } from '../hooks/useSavedDecks'
 import { useAuth } from '../hooks/useAuth'
+import { useAnalyzeDeck } from '../api/hooks'
 import { BRACKET_HEX } from '../utils/colors'
 import { formatBracket, formatEngine } from '../utils/formatters'
 import BracketBadge from '../components/results/BracketBadge'
@@ -16,11 +17,11 @@ import ValidationErrors from '../components/results/ValidationErrors'
 
 export default function MyDecksPage() {
   const { user, signInWithGoogle } = useAuth()
-  const { decks, removeDeck, loading, isCloud, migrationNeeded, migrateLocalDecks, dismissMigration } = useSavedDecks()
+  const { decks, saveDeck, removeDeck, loading, isCloud, migrationNeeded, migrateLocalDecks, dismissMigration } = useSavedDecks()
   const [viewingDeck, setViewingDeck] = useState<SavedDeck | null>(null)
 
   if (viewingDeck) {
-    return <DeckDetail deck={viewingDeck} onBack={() => setViewingDeck(null)} onRemove={removeDeck} />
+    return <DeckDetail deck={viewingDeck} onBack={() => setViewingDeck(null)} onRemove={removeDeck} onUpdate={(updated) => setViewingDeck(updated)} saveDeck={saveDeck} />
   }
 
   return (
@@ -123,10 +124,36 @@ export default function MyDecksPage() {
   )
 }
 
-function DeckDetail({ deck, onBack, onRemove }: { deck: SavedDeck; onBack: () => void; onRemove: (id: string) => void }) {
+function DeckDetail({ deck, onBack, onRemove, onUpdate, saveDeck }: {
+  deck: SavedDeck
+  onBack: () => void
+  onRemove: (id: string) => void
+  onUpdate: (deck: SavedDeck) => void
+  saveDeck: (analysis: never, decklist?: string) => Promise<string>
+}) {
   const [showFull, setShowFull] = useState(false)
+  const reanalyzeMutation = useAnalyzeDeck()
   const analysis = deck.analysis
   const ba = analysis.bracket_analysis
+
+  const handleReanalyze = async () => {
+    if (!deck.decklist) return
+    reanalyzeMutation.mutate({ decklist: deck.decklist, commander: deck.commander ?? undefined }, {
+      onSuccess: async (newAnalysis) => {
+        // Save the updated analysis
+        await saveDeck(newAnalysis as never, deck.decklist)
+        // Update the view
+        onUpdate({
+          ...deck,
+          bracket: newAnalysis.bracket_analysis.deck_bracket,
+          engine: newAnalysis.ipom_analysis.engine.primary_engine,
+          cardCount: newAnalysis.deck_stats.total_cards,
+          savedAt: new Date().toISOString(),
+          analysis: newAnalysis,
+        })
+      },
+    })
+  }
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 pb-24 md:pb-8 space-y-6">
@@ -161,6 +188,24 @@ function DeckDetail({ deck, onBack, onRemove }: { deck: SavedDeck; onBack: () =>
           Analyzed {new Date(deck.savedAt).toLocaleDateString()}
         </p>
       </div>
+
+      {/* Re-analyze button */}
+      {deck.decklist && (
+        <button
+          onClick={handleReanalyze}
+          disabled={reanalyzeMutation.isPending}
+          className="w-full py-2 text-sm border border-gray-700 text-gray-400 rounded-lg hover:text-white hover:border-gray-500 transition-colors"
+        >
+          {reanalyzeMutation.isPending ? (
+            <span className="flex items-center justify-center gap-2">
+              <span className="animate-spin inline-block w-3 h-3 border-2 border-gray-600 border-t-purple-500 rounded-full" />
+              Re-analyzing...
+            </span>
+          ) : (
+            'Re-analyze with Latest Engine'
+          )}
+        </button>
+      )}
 
       {/* Toggle full details */}
       <button
