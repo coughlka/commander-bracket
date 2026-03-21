@@ -14,18 +14,26 @@ export default function HomePage() {
             </span>
           </h1>
           <p className="text-lg text-gray-400 max-w-md mx-auto">
-            Paste your Commander decklist. Get an instant bracket classification
-            with full reasoning, engine analysis, and game changers.
+            Analyze your Commander deck's bracket level or build a new deck
+            from your collection with card suggestions.
           </p>
         </div>
 
-        {/* CTA */}
-        <Link
-          to="/bracket"
-          className="inline-block px-8 py-4 bg-white text-gray-950 font-bold text-lg rounded-xl hover:bg-gray-200 transition-colors"
-        >
-          Check Your Bracket
-        </Link>
+        {/* Two CTAs */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <Link
+            to="/bracket"
+            className="w-full sm:w-auto px-8 py-4 bg-white text-gray-950 font-bold text-lg rounded-xl hover:bg-gray-200 transition-colors text-center"
+          >
+            Check Your Bracket
+          </Link>
+          <Link
+            to="/build"
+            className="w-full sm:w-auto px-8 py-4 bg-gray-800 text-white font-bold text-lg rounded-xl border border-gray-700 hover:bg-gray-700 transition-colors text-center"
+          >
+            Build a Deck
+          </Link>
+        </div>
 
         {/* Features */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-8">
@@ -34,8 +42,8 @@ export default function HomePage() {
             description="WotC-aligned power level classification"
           />
           <FeatureCard
-            title="Engine Analysis"
-            description="IPOM engine detection with role breakdown"
+            title="Deck Builder"
+            description="Get card suggestions from your collection by engine and play style"
           />
           <FeatureCard
             title="Card Previews"

@@ -163,7 +163,7 @@ export default function BuildPage() {
             disabled={staplesMutation.isPending}
             className="w-full py-3 bg-white text-gray-950 font-semibold rounded-lg hover:bg-gray-200 disabled:opacity-40 transition-colors text-base"
           >
-            {staplesMutation.isPending ? 'Loading Suggestions...' : 'Get Card Suggestions'}
+            {staplesMutation.isPending ? 'Building...' : 'Build My Deck'}
           </button>
         )}
 
