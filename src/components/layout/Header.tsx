@@ -16,9 +16,8 @@ export default function Header() {
     <header className="border-b border-gray-800 bg-gray-950/80 backdrop-blur-sm sticky top-0 z-50">
       <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 font-bold text-lg text-white hover:text-gray-200 transition-colors">
-          <span className="text-2xl">&#9876;</span>
+          <img src="/logo.png" alt="CommanderBracket" className="h-8 w-auto" />
           <span className="hidden sm:inline">CommanderBracket</span>
-          <span className="sm:hidden">CB</span>
         </Link>
 
         <div className="flex items-center gap-4">

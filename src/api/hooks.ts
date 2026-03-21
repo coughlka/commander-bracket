@@ -152,3 +152,63 @@ export function useComboCompletions() {
       apiPost<ComboCompletionsResult>('/decks/combo-completions', req),
   })
 }
+
+// --- Build and Analyze ---
+
+interface BuildAndAnalyzeRequest {
+  commander: string
+  power_level?: number
+  budget?: number
+  partner?: string
+}
+
+interface DeckCard {
+  name: string
+  quantity: number
+  role: string
+  reason: string
+  cmc?: number
+  price_usd?: number
+}
+
+export interface BuildAndAnalyzeResult {
+  summary: {
+    headline: string
+    key_stats: {
+      power_bracket: number
+      bracket_label: string
+      estimated_win_turn: number
+      primary_engine: string
+      primary_win_condition: string
+      tribal?: Record<string, unknown>
+    }
+    strengths: string[]
+    weaknesses: string[]
+    suggested_actions: string[]
+    bracket_mismatch?: { requested: number; actual: number; reason: string }
+  }
+  deck: {
+    commander: string
+    color_identity: string[]
+    card_count: number
+    build_axis: string
+    decklist: string
+    cards: DeckCard[]
+    build_notes: string[]
+  }
+  analysis: {
+    validation: Record<string, unknown>
+    ipom: Record<string, unknown>
+    bracket: Record<string, unknown>
+    win_conditions: Record<string, unknown>
+    commander_synergy?: Record<string, unknown>
+  }
+  schema_versions: Record<string, string>
+}
+
+export function useBuildAndAnalyze() {
+  return useMutation({
+    mutationFn: (req: BuildAndAnalyzeRequest) =>
+      apiPost<BuildAndAnalyzeResult>('/commander/build-and-analyze', req),
+  })
+}
