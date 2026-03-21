@@ -26,6 +26,10 @@ export const ENGINE_LABELS: Record<string, string> = {
   stax_tax: 'Stax/Tax',
   group_slug: 'Group Slug',
   wheels_cycling: 'Wheels',
+  earthbend: 'Earthbend',
+  firebending: 'Firebending',
+  airbending: 'Airbending',
+  waterbending: 'Waterbending',
   unknown: 'Unknown',
 }
 
