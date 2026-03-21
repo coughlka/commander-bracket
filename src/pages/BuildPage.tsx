@@ -67,7 +67,7 @@ export default function BuildPage() {
   const handleGetSuggestions = () => {
     if (!commander || !profile) return
 
-    const colors = profile.card_data.color_identity.join('')
+    const colors = profile.commander_profile.color_identity.join('')
     const decklist = buildDecklist()
     const intentMode = preferences.intentModes[0] ?? 'value'
 
@@ -77,7 +77,7 @@ export default function BuildPage() {
       budget: preferences.maxPerCard ?? undefined,
       collection_id: collectionId ?? undefined,
       additional_owned: ownedCards ?? undefined,
-      engine_types: profile.commander_profile.expected_engine_types,
+      engine_types: profile.commander_profile.expected_engines ?? [],
       intent_mode: intentMode,
       commander,
     })

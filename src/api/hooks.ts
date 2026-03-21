@@ -31,16 +31,20 @@ export function useCardAutocomplete(query: string) {
 
 export interface CommanderProfile {
   commander_profile: {
+    name: string
+    color_identity: string[]
     primary_mechanics: string[]
     secondary_mechanics: string[]
-    cost_modifiers: { type: string; mechanic: string }[]
-    trigger_modifiers: { type: string; mechanic: string }[]
+    keywords: string[]
+    cost_modifiers: unknown[]
+    trigger_modifiers: unknown[]
     zone_interactions: string[]
-    implied_build_axis: string
     tribal_types: string[]
-    expected_engine_types: string[]
-    power_level_estimate: number
-    synergy_card_suggestions: { card_name: string; reason: string }[]
+    build_axes: string[]
+    primary_build_axis: string
+    expected_engines: string[]
+    power_level: string | number
+    synergy_cards: Record<string, string[]>
   }
   card_data: {
     name: string
