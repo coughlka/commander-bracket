@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useSavedDecks, type SavedDeck } from '../hooks/useSavedDecks'
+import { useAuth } from '../hooks/useAuth'
 import { BRACKET_HEX } from '../utils/colors'
 import { formatBracket, formatEngine } from '../utils/formatters'
 import BracketBadge from '../components/results/BracketBadge'
@@ -14,7 +15,8 @@ import CardList from '../components/results/CardList'
 import ValidationErrors from '../components/results/ValidationErrors'
 
 export default function MyDecksPage() {
-  const { decks, removeDeck } = useSavedDecks()
+  const { user, signInWithGoogle } = useAuth()
+  const { decks, removeDeck, loading, isCloud, migrationNeeded, migrateLocalDecks, dismissMigration } = useSavedDecks()
   const [viewingDeck, setViewingDeck] = useState<SavedDeck | null>(null)
 
   if (viewingDeck) {
@@ -26,11 +28,49 @@ export default function MyDecksPage() {
       <div className="text-center space-y-2 mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-white">My Decks</h1>
         <p className="text-sm text-gray-500">
-          Saved bracket analyses — tap to show at your LGS
+          {isCloud ? 'Synced across devices' : 'Saved bracket analyses — tap to show at your LGS'}
         </p>
       </div>
 
-      {decks.length === 0 ? (
+      {/* Migration banner */}
+      {migrationNeeded && (
+        <div className="bg-blue-900/20 border border-blue-800/40 rounded-lg p-4 mb-6 space-y-3">
+          <p className="text-sm text-blue-300">
+            You have saved decks on this device. Import them to your account?
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={migrateLocalDecks}
+              className="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded-lg transition-colors"
+            >
+              Import Decks
+            </button>
+            <button
+              onClick={dismissMigration}
+              className="px-4 py-1.5 text-gray-400 hover:text-gray-200 text-sm transition-colors"
+            >
+              Skip
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Sign in prompt for anonymous users */}
+      {!user && (
+        <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4 mb-6 text-center space-y-2">
+          <p className="text-sm text-gray-400">Sign in to sync your decks across devices</p>
+          <button
+            onClick={signInWithGoogle}
+            className="px-4 py-1.5 bg-white text-gray-950 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            Sign in with Google
+          </button>
+        </div>
+      )}
+
+      {loading ? (
+        <div className="text-center py-16 text-gray-500">Loading decks...</div>
+      ) : decks.length === 0 ? (
         <div className="text-center py-16 space-y-4">
           <p className="text-gray-500">No saved decks yet</p>
           <Link
@@ -155,7 +195,7 @@ function DeckDetail({ deck, onBack, onRemove }: { deck: SavedDeck; onBack: () =>
 
       {/* Remove */}
       <button
-        onClick={() => { onRemove(deck.id); onBack() }}
+        onClick={async () => { await onRemove(deck.id); onBack() }}
         className="w-full py-2 text-sm text-red-500/60 hover:text-red-400 transition-colors"
       >
         Remove Saved Deck

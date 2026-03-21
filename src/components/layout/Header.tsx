@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
+import AuthButton from '../auth/AuthButton'
 
 const NAV_ITEMS = [
   { path: '/', label: 'Home' },
@@ -19,21 +20,24 @@ export default function Header() {
           <span className="sm:hidden">CB</span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-6">
-          {NAV_ITEMS.map(({ path, label }) => (
-            <Link
-              key={path}
-              to={path}
-              className={`text-sm font-medium transition-colors ${
-                location.pathname === path
-                  ? 'text-white'
-                  : 'text-gray-400 hover:text-gray-200'
-              }`}
-            >
-              {label}
-            </Link>
-          ))}
-        </nav>
+        <div className="flex items-center gap-4">
+          <nav className="hidden md:flex items-center gap-6">
+            {NAV_ITEMS.map(({ path, label }) => (
+              <Link
+                key={path}
+                to={path}
+                className={`text-sm font-medium transition-colors ${
+                  location.pathname === path
+                    ? 'text-white'
+                    : 'text-gray-400 hover:text-gray-200'
+                }`}
+              >
+                {label}
+              </Link>
+            ))}
+          </nav>
+          <AuthButton />
+        </div>
       </div>
     </header>
   )

@@ -17,18 +17,20 @@ import FeedbackWidget from '../components/shared/FeedbackWidget'
 
 export default function BracketPage() {
   const mutation = useAnalyzeDeck()
-  const { saveDeck } = useSavedDecks()
+  const [lastDecklist, setLastDecklist] = useState('')
+  const { saveDeck } = useSavedDecks(lastDecklist)
   const [saved, setSaved] = useState(false)
   const analysis = mutation.data
 
   const handleAnalyze = (decklist: string) => {
     setSaved(false)
+    setLastDecklist(decklist)
     mutation.mutate({ decklist })
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!analysis) return
-    saveDeck(analysis)
+    await saveDeck(analysis)
     setSaved(true)
   }
 
