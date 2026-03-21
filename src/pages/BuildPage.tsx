@@ -8,6 +8,7 @@ import BracketBadge from '../components/results/BracketBadge'
 import BracketMeter from '../components/results/BracketMeter'
 import CardTooltip from '../components/shared/CardTooltip'
 import ErrorBoundary from '../components/shared/ErrorBoundary'
+import DeckExport from '../components/builder/DeckExport'
 import { formatEngine, formatBracket } from '../utils/formatters'
 
 const ROLE_COLORS: Record<string, string> = {
@@ -237,14 +238,25 @@ function BuildResult({ result, saved, onSave }: { result: BuildAndAnalyzeResult;
         </div>
       )}
 
-      {/* Card list by role */}
+      {/* Export buttons */}
+      <DeckExport commander={deck.commander} cards={deck.cards} />
+
+      {/* Card list by role — commander first */}
       <div className="space-y-4">
         <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wide">
           Decklist ({deck.card_count} cards)
         </h3>
 
         {Object.entries(cardsByRole)
-          .sort(([a], [b]) => a.localeCompare(b))
+          .sort(([a], [b]) => {
+            // Commander always first
+            if (a === 'commander') return -1
+            if (b === 'commander') return 1
+            // Then land last
+            if (a === 'land') return 1
+            if (b === 'land') return -1
+            return a.localeCompare(b)
+          })
           .map(([role, cards]) => (
           <div key={role}>
             <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">
