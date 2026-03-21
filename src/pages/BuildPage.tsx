@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNaturalBuild, type BuildAndAnalyzeResult } from '../api/hooks'
 import { useSavedDecks } from '../hooks/useSavedDecks'
+import { useCollection } from '../hooks/useCollection'
 import CommanderSearch from '../components/builder/CommanderSearch'
 import CommanderProfile from '../components/builder/CommanderProfile'
 import CollectionInput from '../components/builder/CollectionInput'
@@ -36,12 +37,15 @@ export default function BuildPage() {
   const [commander, setCommander] = useState<string | null>(null)
   const [partner, setPartner] = useState<string | null>(null)
   const [prompt, setPrompt] = useState('')
-  const [collectionId, setCollectionId] = useState<string | null>(null)
+  const [useMyCollection, setUseMyCollection] = useState(false)
   const [saved, setSaved] = useState(false)
 
   const buildMutation = useNaturalBuild()
   const { saveDeck } = useSavedDecks()
+  const collection = useCollection()
   const result = buildMutation.data
+
+  const hasCollection = !!(collection.collectionId || (collection.ownedCards && collection.ownedCards.length > 0))
 
   const handleCommanderSelect = (name: string, partnerName: string | null) => {
     setPartner(partnerName)
@@ -51,7 +55,9 @@ export default function BuildPage() {
   }
 
   const handleCollectionLoaded = (data: { collectionId?: string; ownedCards?: string[] }) => {
-    if (data.collectionId) setCollectionId(data.collectionId)
+    if (data.collectionId || data.ownedCards) {
+      setUseMyCollection(true)
+    }
   }
 
   const handleBuild = () => {
@@ -60,7 +66,7 @@ export default function BuildPage() {
       prompt: prompt.trim() || 'Build a well-rounded deck',
       commander: commander ?? undefined,
       partner: partner ?? undefined,
-      collection_id: collectionId ?? undefined,
+      collection_id: useMyCollection ? collection.collectionId ?? undefined : undefined,
     })
   }
 
@@ -121,8 +127,23 @@ export default function BuildPage() {
         </div>
       </div>
 
-      {/* Collection (optional) */}
-      <CollectionInput onCollectionLoaded={handleCollectionLoaded} />
+      {/* Collection toggle */}
+      {hasCollection ? (
+        <button
+          onClick={() => setUseMyCollection(!useMyCollection)}
+          className={`w-full py-2.5 rounded-lg text-sm border transition-colors ${
+            useMyCollection
+              ? 'bg-purple-900/30 border-purple-600 text-purple-300'
+              : 'bg-gray-900 border-gray-700 text-gray-400 hover:border-gray-500'
+          }`}
+        >
+          {useMyCollection
+            ? `Using my collection (${collection.cardCount ?? '?'} cards)`
+            : 'Use my collection'}
+        </button>
+      ) : (
+        <CollectionInput onCollectionLoaded={handleCollectionLoaded} />
+      )}
 
       {/* Build button */}
       <button

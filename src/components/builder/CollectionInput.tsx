@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { useIngestCollection } from '../../api/hooks'
+import { useCollection } from '../../hooks/useCollection'
 
 interface CollectionInputProps {
   onCollectionLoaded: (data: { collectionId?: string; ownedCards?: string[] }) => void
@@ -8,15 +9,35 @@ interface CollectionInputProps {
 export default function CollectionInput({ onCollectionLoaded }: CollectionInputProps) {
   const [url, setUrl] = useState('')
   const [status, setStatus] = useState<string | null>(null)
+  const [showInput, setShowInput] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const ingestMutation = useIngestCollection()
+  const { collectionId, ownedCards, cardCount, sourceUrl, saveCollection, clearCollection } = useCollection()
+
+  const hasCollection = !!(collectionId || (ownedCards && ownedCards.length > 0))
+
+  // Auto-notify parent if we have a saved collection
+  useState(() => {
+    if (collectionId) {
+      onCollectionLoaded({ collectionId })
+    } else if (ownedCards && ownedCards.length > 0) {
+      onCollectionLoaded({ ownedCards })
+    }
+  })
 
   const handleUrlSubmit = () => {
     if (!url.trim()) return
     ingestMutation.mutate(url.trim(), {
       onSuccess: (data) => {
-        setStatus(`${data.unique_count} cards loaded from your collection`)
+        const count = data.unique_count
+        setStatus(`${count} cards loaded from your collection`)
         onCollectionLoaded({ collectionId: data.collection_id })
+        saveCollection({
+          collectionId: data.collection_id,
+          sourceUrl: url.trim(),
+          cardCount: count,
+        })
+        setShowInput(false)
       },
       onError: () => {
         setStatus('Failed to load collection. Check the URL and try again.')
@@ -38,10 +59,8 @@ export default function CollectionInput({ onCollectionLoaded }: CollectionInputP
         .map(line => {
           const trimmed = line.trim()
           if (!trimmed || trimmed.startsWith('#') || trimmed.startsWith('//')) return null
-          // Strip quantity, set codes, collector numbers
           const match = trimmed.match(/^\d+x?\s+(.+?)(?:\s+[\(\[][A-Za-z0-9]+[\)\]].*)?$/)
           if (match) return match[1].trim()
-          // Plain card name
           if (trimmed.length > 1 && !trimmed.match(/^\d+$/)) return trimmed
           return null
         })
@@ -50,6 +69,11 @@ export default function CollectionInput({ onCollectionLoaded }: CollectionInputP
       if (cards.length > 0) {
         setStatus(`${cards.length} cards loaded from file`)
         onCollectionLoaded({ ownedCards: cards })
+        saveCollection({
+          ownedCards: cards,
+          cardCount: cards.length,
+        })
+        setShowInput(false)
       } else {
         setStatus('No cards found in file')
       }
@@ -58,10 +82,52 @@ export default function CollectionInput({ onCollectionLoaded }: CollectionInputP
     e.target.value = ''
   }
 
+  const handleClear = async () => {
+    await clearCollection()
+    onCollectionLoaded({})
+    setStatus(null)
+    setShowInput(false)
+  }
+
+  // Show saved collection summary
+  if (hasCollection && !showInput) {
+    return (
+      <div className="space-y-2">
+        <label className="text-xs text-gray-500 uppercase tracking-wide font-medium">
+          My Collection
+        </label>
+        <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-3 flex items-center justify-between">
+          <div>
+            <p className="text-sm text-gray-300">
+              {cardCount ? `${cardCount} cards` : 'Collection loaded'}
+            </p>
+            {sourceUrl && (
+              <p className="text-xs text-gray-600 truncate max-w-[200px]">{sourceUrl}</p>
+            )}
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowInput(true)}
+              className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+            >
+              Update
+            </button>
+            <button
+              onClick={handleClear}
+              className="text-xs text-red-500/60 hover:text-red-400 transition-colors"
+            >
+              Remove
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-3">
       <label className="text-xs text-gray-500 uppercase tracking-wide font-medium">
-        Collection (optional)
+        My Collection (optional)
       </label>
 
       {/* Archidekt URL */}
@@ -104,6 +170,10 @@ export default function CollectionInput({ onCollectionLoaded }: CollectionInputP
           {status}
         </p>
       )}
+
+      <p className="text-xs text-gray-600">
+        Upload once — your collection is saved for future deck builds
+      </p>
     </div>
   )
 }
