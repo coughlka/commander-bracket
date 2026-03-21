@@ -222,6 +222,39 @@ interface NaturalBuildRequest {
   collection_id?: string
 }
 
+// --- Bracket Adjustment ---
+
+interface AdjustBracketRequest {
+  decklist: string
+  target_bracket: number
+  commander?: string
+}
+
+interface SwapSuggestion {
+  remove: string
+  remove_reason: string
+  add: string
+  add_reason: string
+  category: string
+}
+
+export interface AdjustBracketResult {
+  current_bracket: number
+  target_bracket: number
+  swaps: SwapSuggestion[]
+  explanation: string
+  estimated_new_bracket: number
+}
+
+export function useAdjustBracket() {
+  return useMutation({
+    mutationFn: (req: AdjustBracketRequest) =>
+      apiPost<AdjustBracketResult>('/decks/adjust-bracket', req),
+  })
+}
+
+// --- Natural Language Build ---
+
 export function useNaturalBuild() {
   return useMutation({
     mutationFn: (req: NaturalBuildRequest) =>

@@ -13,6 +13,7 @@ import EngineBreakdown from '../components/results/EngineBreakdown'
 import ComboList from '../components/results/ComboList'
 import CardBreakdown from '../components/results/CardBreakdown'
 import CardList from '../components/results/CardList'
+import BracketAdjust from '../components/results/BracketAdjust'
 import FeedbackWidget from '../components/shared/FeedbackWidget'
 
 export default function BracketPage() {
@@ -99,6 +100,13 @@ export default function BracketPage() {
           >
             {saved ? 'Saved to My Decks' : 'Save to My Decks'}
           </button>
+
+          {/* Adjust power level */}
+          <BracketAdjust
+            decklist={lastDecklist}
+            currentBracket={analysis.bracket_analysis.deck_bracket}
+            commander={analysis.commander_analysis && typeof analysis.commander_analysis === 'object' && 'name' in analysis.commander_analysis ? analysis.commander_analysis.name as string : null}
+          />
 
           {/* Detailed sections */}
           <div className="space-y-6 divide-y divide-gray-800">
